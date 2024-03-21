@@ -1,11 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import parameters as p
 
 # parameters
 w = [] # weights
 b = 0 # bias
-e = 100 # number of epochs
-lr = 0.05 # learning rate
 
 # data
 F1s = []
@@ -30,7 +29,7 @@ def train(x, y, epochs=100, learning_rate=0.1):
                 b = b + learning_rate * (y[i] - y_pred)
 
         val = validate(x, y)
-        print('TRAIN: Epoch:', epoch, 'F1:', val)
+        print('TRAIN: Epoch:', epoch, 'F1:', val, 'Acc:', val[1])
         F1s.append(val)
     return w, b
 
@@ -55,8 +54,7 @@ def validate(x, y):
                 FP += 1
 
     F1 = 2 * TP / (2 * TP + FP + FN)
-    print ('F1: ', F1, ', Acc: ', correct / n)
-    return F1
+    return F1, correct / n
 
 # generate random data based on the given seed and number of data points
 # the data is plotted and returned
@@ -74,7 +72,7 @@ def generate_data(seed=0, n=100, noise=0.1, n_outlier=0):
     # add noise
     for i in range(n):
         if np.random.rand() < noise:
-            y[i] = 1 - y[i]
+            y[i] = y[i] * noise
 
     # add outlier
     for i in range(n_outlier):
@@ -85,24 +83,24 @@ def generate_data(seed=0, n=100, noise=0.1, n_outlier=0):
 def main():
     global w, b
     # generate data
-    x, y = generate_data(0, 10000, 0.1, 10)
-    x2, y2 = generate_data(1, 1000, 0.01, 4)
+    x, y = generate_data(p.seed, p.n, p.noise, 0)
+    x2, y2 = generate_data(p.seed + 69, p.n, p.noise, 0)
     # train
-    train(x, y, e, lr)
+    train(x, y, p.e, p.lr)
     # validate
     F1 = validate(x2, y2)
     print('VALID: F1:', F1)
 
     # plot
     plt.figure()
-    plt.plot(x[y == 0, 0], x[y == 0, 1], 'ro')
-    plt.plot(x[y == 1, 0], x[y == 1, 1], 'bo')
-    plt.plot(x2[y2 == 0, 0], x2[y2 == 0, 1], 'r+')
-    plt.plot(x2[y2 == 1, 0], x2[y2 == 1, 1], 'b+')
+    # plt.plot(x[y == 0, 0], x[y == 0, 1], 'ro')
+    # plt.plot(x[y == 1, 0], x[y == 1, 1], 'bo')
+    plt.plot(x2[y2 == 0, 0], x2[y2 == 0, 1], 'g+')
+    plt.plot(x2[y2 == 1, 0], x2[y2 == 1, 1], 'y+')
     # plot decision boundary
     x1 = np.linspace(-3, 3, 100)
     x2 = -w[0] / w[1] * x1 - b / w[1]
-    plt.plot(x1, x2, 'g')
+    plt.plot(x1, x2, 'k-')
     plt.title('F1: ' + str(F1))
     plt.show()
 
